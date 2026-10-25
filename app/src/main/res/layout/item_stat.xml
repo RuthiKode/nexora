@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashboard metric card. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:layout_weight="1"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout style="@style/Nexora.CardBody">
+
+        <ImageView
+            android:id="@+id/stat_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="?attr/colorPrimaryContainer"
+            android:importantForAccessibility="no"
+            android:padding="8dp"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/stat_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="—"
+            android:textAppearance="@style/TextAppearance.Nexora.Display" />
+
+        <TextView
+            android:id="@+id/stat_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Nexora.Caption" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

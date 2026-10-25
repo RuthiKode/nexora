@@ -1,0 +1,17 @@
+{
+  "indexes": [
+    { "collectionGroup": "placementDrives", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "ASCENDING" } ] },
+    { "collectionGroup": "applications", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "studentId", "order": "ASCENDING" }, { "fieldPath": "updatedAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "applications", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "driveId", "order": "ASCENDING" }, { "fieldPath": "appliedAt", "order": "ASCENDING" } ] },
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "audience", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "targetUid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "studentProfiles", "queryScope": "COLLECTION",
+      "fields": [ { "fieldPath": "academicVerified", "order": "ASCENDING" }, { "fieldPath": "updatedAt", "order": "ASCENDING" } ] }
+  ],
+  "fieldOverrides": []
+}

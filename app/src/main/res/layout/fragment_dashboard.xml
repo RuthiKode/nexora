@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Officer dashboard: metrics, quick actions, pending verifications and upcoming deadlines. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="11dp">
+
+            <TextView
+                android:id="@+id/d_greeting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:text="@string/placement_office"
+                android:textAppearance="@style/TextAppearance.Nexora.Display" />
+
+            <TextView
+                android:id="@+id/d_season"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:paddingHorizontal="5dp"
+                android:textAppearance="@style/TextAppearance.Nexora.Caption" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/stat_open"
+                    layout="@layout/item_stat" />
+
+                <include
+                    android:id="@+id/stat_apps"
+                    layout="@layout/item_stat" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/stat_pending"
+                    layout="@layout/item_stat" />
+
+                <include
+                    android:id="@+id/stat_selected"
+                    layout="@layout/item_stat" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:paddingHorizontal="5dp">
+
+                <Button
+                    android:id="@+id/qa_new_drive"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:minHeight="52dp"
+                    android:text="@string/new_drive"
+                    app:icon="@drawable/ic_add" />
+
+                <Button
+                    android:id="@+id/qa_companies"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:minHeight="52dp"
+                    android:text="@string/companies"
+                    app:icon="@drawable/ic_business" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:paddingHorizontal="5dp"
+                android:text="@string/pending_verification" />
+
+            <LinearLayout
+                android:id="@+id/pending_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="5dp" />
+
+            <TextView
+                android:id="@+id/pending_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:text="@string/queue_clear"
+                android:textAppearance="@style/TextAppearance.Nexora.Caption"
+                android:visibility="gone" />
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:paddingHorizontal="5dp"
+                android:text="@string/upcoming_deadlines" />
+
+            <LinearLayout
+                android:id="@+id/deadline_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="5dp" />
+
+            <TextView
+                android:id="@+id/deadline_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:text="@string/no_open_drives"
+                android:textAppearance="@style/TextAppearance.Nexora.Caption"
+                android:visibility="gone" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/state"
+        layout="@layout/view_state" />
+</FrameLayout>

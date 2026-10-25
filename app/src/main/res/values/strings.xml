@@ -1,0 +1,161 @@
+<resources>
+    <string name="app_name">NEXORA</string>
+    <string name="tagline">Your Next Opportunity Starts Here.</string>
+
+    <!-- Common -->
+    <string name="loading">Loading</string>
+    <string name="retry">Retry</string>
+    <string name="search">Search</string>
+    <string name="add">Add</string>
+    <string name="reset">Reset</string>
+    <string name="offline_banner">Offline — showing saved data</string>
+    <string name="channel_updates">Application updates</string>
+    <string name="channel_announcements">Announcements</string>
+    <string name="notifications">Notifications</string>
+    <string name="theme">Theme</string>
+    <string name="logout">Log out</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_drives">Drives</string>
+    <string name="nav_applications">Applications</string>
+    <string name="nav_readiness">Readiness</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_verify">Verify</string>
+    <string name="nav_announce">Announce</string>
+    <string name="nav_analytics">Analytics</string>
+
+    <!-- Auth & onboarding -->
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="sign_in">Sign in</string>
+    <string name="create_account">Create account</string>
+    <string name="welcome_back">Welcome back</string>
+    <string name="sign_in_subtitle">Sign in to continue to your placement portal.</string>
+    <string name="full_name">Full name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="officer_note">Placement officer accounts are issued by the placement office.</string>
+
+    <!-- Student home -->
+    <string name="open_profile">Open profile</string>
+    <string name="placement_readiness">Placement readiness</string>
+    <string name="view_dashboard">View dashboard</string>
+    <string name="eligible_for_you">Eligible for you</string>
+    <string name="see_all">See all</string>
+    <string name="closing_soon">Closing soon</string>
+    <string name="nothing_closing">No eligible drives close in the next 7 days.</string>
+    <string name="latest_announcement">Latest announcement</string>
+
+    <!-- Drive detail -->
+    <string name="eligibility">Eligibility</string>
+    <string name="match_score">Match score</string>
+    <string name="skills_you_have">Skills you have</string>
+    <string name="skills_to_build">Skills to build</string>
+    <string name="match_disclaimer">The match score ranks opportunities for you using skills (60%), role preference (25%) and readiness (15%). It does not predict selection.</string>
+    <string name="about_role">About the role</string>
+    <string name="required_skills">Required skills</string>
+    <string name="visit_website">Visit website</string>
+    <string name="recruitment_stages">Recruitment stages</string>
+    <string name="apply_now">Apply now</string>
+
+    <!-- Journey -->
+    <string name="view_drive">View drive</string>
+    <string name="profile_snapshot">Profile snapshot at apply time</string>
+    <string name="recruitment_timeline">Recruitment timeline</string>
+    <string name="reject">Reject</string>
+    <string name="advance">Advance</string>
+
+    <!-- Readiness -->
+    <string name="overall_readiness">Overall readiness</string>
+    <string name="readiness_disclaimer">Readiness reflects your recorded preparation, not your chance of getting an offer.</string>
+    <string name="components">Components</string>
+    <string name="last_six_weeks">Last 6 weeks</string>
+    <string name="weekly_caption">Activities logged per week (oldest → this week).</string>
+    <string name="suggestions">Suggestions</string>
+    <string name="relevant_drives">Relevant upcoming drives</string>
+    <string name="no_relevant_drives">No upcoming eligible drives right now.</string>
+    <string name="recent_activity">Recent activity</string>
+    <string name="no_activity">Nothing logged yet. Log a practice session to start building readiness.</string>
+    <string name="log_activity">Log activity</string>
+    <string name="activity_type">Type</string>
+    <string name="activity_title">What did you do?</string>
+    <string name="score_percent">Score</string>
+    <string name="interview_rating">Mock interview rating</string>
+    <string name="duration_minutes">Duration</string>
+
+    <!-- Profile -->
+    <string name="personal">Personal</string>
+    <string name="academic_record">Academic record</string>
+    <string name="roll_number">Roll number</string>
+    <string name="branch">Branch</string>
+    <string name="cgpa">CGPA</string>
+    <string name="active_backlogs">Active backlogs</string>
+    <string name="graduation_year">Graduation year</string>
+    <string name="skills">Skills</string>
+    <string name="add_skill">Add a skill</string>
+    <string name="skill_helper">e.g. Java, SQL, React — common aliases like JS are recognised</string>
+    <string name="preferred_roles">Preferred roles</string>
+    <string name="certifications">Certifications</string>
+    <string name="add_certification">Add a certification</string>
+    <string name="resume_links">Resume &amp; links</string>
+    <string name="resume_url">Resume link</string>
+    <string name="resume_helper">Share a Google Drive (or similar) link with view access</string>
+    <string name="linkedin_url">LinkedIn URL</string>
+    <string name="github_url">GitHub URL</string>
+    <string name="summary">Professional summary</string>
+    <string name="save_profile">Save profile</string>
+
+    <!-- Officer -->
+    <string name="placement_office">Placement office</string>
+    <string name="new_drive">New drive</string>
+    <string name="companies">Companies</string>
+    <string name="pending_verification">Pending verification</string>
+    <string name="queue_clear">All academic records are verified.</string>
+    <string name="upcoming_deadlines">Upcoming deadlines</string>
+    <string name="no_open_drives">No open drives.</string>
+    <string name="applications_per_drive">Applications per drive</string>
+    <string name="recruitment_funnel">Recruitment funnel</string>
+    <string name="drive">Drive</string>
+    <string name="branch_selections">Branch-wise selections</string>
+    <string name="readiness_comparison">Readiness: applicants vs selected</string>
+
+    <!-- Drive editor -->
+    <string name="drive_details">Drive details</string>
+    <string name="company">Company</string>
+    <string name="drive_title">Title (e.g. SDE Intern)</string>
+    <string name="role_category">Role category</string>
+    <string name="job_type">Job type</string>
+    <string name="location">Location</string>
+    <string name="package_lpa">Package</string>
+    <string name="description">Description</string>
+    <string name="eligibility_criteria">Eligibility criteria</string>
+    <string name="min_cgpa">Minimum CGPA</string>
+    <string name="max_backlogs">Max active backlogs</string>
+    <string name="eligible_branches">Eligible branches</string>
+    <string name="graduation_years">Graduation years</string>
+    <string name="skills_and_focus">Skills &amp; preparation focus</string>
+    <string name="add_required_skill">Add a required skill</string>
+    <string name="prep_focus">Preparation focus</string>
+    <string name="deadline">Application deadline</string>
+    <string name="stages_help">\"Application Submitted\" and \"Final Outcome\" are fixed. Add rounds in between and set schedules.</string>
+    <string name="add_stage">Add stage</string>
+    <string name="save_draft">Save draft</string>
+    <string name="publish">Publish</string>
+    <string name="stage_name">Stage name</string>
+    <string name="move_up">Move stage up</string>
+    <string name="move_down">Move stage down</string>
+    <string name="remove_stage">Remove stage</string>
+    <string name="venue_or_link">Venue or link</string>
+
+    <!-- Filters -->
+    <string name="filter_and_sort">Filter &amp; sort</string>
+    <string name="sort_by">Sort by</string>
+    <string name="min_package">Minimum package</string>
+    <string name="eligible_only">Eligible only</string>
+    <string name="bookmarked_only">Bookmarked only</string>
+    <string name="open_only">Open for applications only</string>
+    <string name="show_results">Show results</string>
+</resources>

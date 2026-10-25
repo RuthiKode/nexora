@@ -1,0 +1,213 @@
+rules_version = '2';
+
+// NEXORA Firestore Security Rules — the server-enforced gate (the app has no backend).
+// Hardened from NEXORA_PLAN.md §6. Audit fixes versus the original draft:
+//  * every write whitelists its keys (no smuggled fields such as role, verifiedBy, outcome data);
+//  * users: email must match the auth token, createdAt must be the server time, only name/fcmToken editable;
+//  * studentProfiles: academic values are type/range checked; officers can only verify complete records
+//    and must stamp verifiedBy = themselves with the server time;
+//  * applications: the denormalised snapshot, names, title and company must equal the real profile and
+//    drive (a student cannot apply with a fake CGPA snapshot), stageHistory must start empty, matchScore 0–100;
+//  * officer updates move at most one stage forward, append exactly one history entry, and final
+//    outcomes (SELECTED/REJECTED) are immutable;
+//  * notifications must be stamped with the creating officer and server time;
+//  * readiness activities are schema-checked.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function incoming() { return request.resource.data; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function userPath(uid) { return /databases/$(db)/documents/users/$(uid); }
+    function hasRole(role) {
+      return signedIn() && exists(userPath(me())) && get(userPath(me())).data.role == role;
+    }
+    function isOfficer() { return hasRole('OFFICER'); }
+    function isStudent() { return hasRole('STUDENT'); }
+    function optString(m, k, max) { return !(k in m) || m[k] == null || (m[k] is string && m[k].size() <= max); }
+    function nonEmpty(s, max) { return s is string && s.size() > 0 && s.size() <= max; }
+
+    // ------------------------------------------------------------------ users
+    match /users/{uid} {
+      allow read: if signedIn() && (me() == uid || isOfficer());
+      // Self-registration can only ever create a STUDENT. Officers are provisioned with the Admin SDK.
+      allow create: if signedIn() && me() == uid
+        && incoming().keys().hasOnly(['uid', 'name', 'email', 'role', 'createdAt', 'fcmToken'])
+        && incoming().uid == uid
+        && incoming().role == 'STUDENT'
+        && incoming().email == request.auth.token.email
+        && incoming().createdAt == request.time
+        && nonEmpty(incoming().name, 60);
+      allow update: if signedIn() && me() == uid
+        && changed().hasOnly(['name', 'fcmToken'])
+        && nonEmpty(incoming().name, 60)
+        && optString(incoming(), 'fcmToken', 4096);
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------ student profiles
+    function academicFields() { return ['rollNumber', 'branch', 'cgpa', 'activeBacklogs', 'graduationYear']; }
+    function profileKeys() {
+      return ['name', 'email', 'rollNumber', 'branch', 'cgpa', 'activeBacklogs', 'graduationYear',
+              'academicVerified', 'verifiedBy', 'verifiedAt', 'skills', 'preferredRoles', 'certifications',
+              'resumeUrl', 'summary', 'linkedinUrl', 'githubUrl', 'updatedAt'];
+    }
+    function academicValid(p) {
+      return (!('cgpa' in p) || p.cgpa == null || (p.cgpa is number && p.cgpa >= 0 && p.cgpa <= 10))
+        && (!('activeBacklogs' in p) || p.activeBacklogs == null || (p.activeBacklogs is int && p.activeBacklogs >= 0 && p.activeBacklogs <= 30))
+        && (!('graduationYear' in p) || p.graduationYear == null || (p.graduationYear is int && p.graduationYear >= 2000 && p.graduationYear <= 2100))
+        && (!('branch' in p) || p.branch == null || p.branch in ['CSE', 'CSE_AI', 'IT', 'ECE', 'EEE', 'ME', 'CE', 'CHE'])
+        && (!('rollNumber' in p) || p.rollNumber == null || (p.rollNumber is string && p.rollNumber.matches('^[A-Z0-9.\\-]{5,20}$')));
+    }
+    function profileValid(p) {
+      return p.keys().hasOnly(profileKeys()) && academicValid(p)
+        && nonEmpty(p.name, 60)
+        && (!('skills' in p) || (p.skills is list && p.skills.size() <= 50))
+        && (!('preferredRoles' in p) || (p.preferredRoles is list && p.preferredRoles.size() <= 7))
+        && (!('certifications' in p) || (p.certifications is list && p.certifications.size() <= 30))
+        && optString(p, 'resumeUrl', 500) && optString(p, 'linkedinUrl', 500) && optString(p, 'githubUrl', 500)
+        && optString(p, 'summary', 400)
+        && p.updatedAt == request.time;
+    }
+    function academicComplete(p) {
+      return p.get('rollNumber', null) != null && p.get('branch', null) != null && p.get('cgpa', null) != null
+        && p.get('activeBacklogs', null) != null && p.get('graduationYear', null) != null;
+    }
+
+    match /studentProfiles/{uid} {
+      allow read: if signedIn() && (me() == uid || isOfficer());
+      allow create: if isStudent() && me() == uid
+        && profileValid(incoming())
+        && incoming().academicVerified == false
+        && !('verifiedBy' in incoming()) && !('verifiedAt' in incoming());
+      allow update: if
+        // Student: never touches verification; academic fields are frozen once verified.
+        (isStudent() && me() == uid
+          && profileValid(incoming())
+          && !changed().hasAny(['academicVerified', 'verifiedBy', 'verifiedAt'])
+          && (resource.data.academicVerified == false || !changed().hasAny(academicFields())))
+        // Officer: only the verification fields; verify only complete records, stamped with self + server time.
+        || (isOfficer()
+          && changed().hasOnly(['academicVerified', 'verifiedBy', 'verifiedAt', 'updatedAt'])
+          && incoming().updatedAt == request.time
+          && ((incoming().academicVerified == true && academicComplete(resource.data)
+                && incoming().verifiedBy == me() && incoming().verifiedAt == request.time)
+              || (incoming().academicVerified == false
+                && incoming().get('verifiedBy', null) == null && incoming().get('verifiedAt', null) == null)));
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------ companies
+    match /companies/{id} {
+      allow read: if signedIn();
+      allow create, update: if isOfficer()
+        && incoming().keys().hasOnly(['name', 'sector', 'website', 'description', 'logoInitials', 'createdBy', 'createdAt'])
+        && nonEmpty(incoming().name, 100);
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------ placement drives
+    function driveValid(d) {
+      return d.keys().hasOnly(['companyId', 'companyName', 'title', 'roleCategory', 'jobType', 'location', 'packageLpa',
+                               'description', 'criteria', 'requiredSkills', 'prepFocus', 'stages', 'deadline', 'status',
+                               'applicantCount', 'createdBy', 'createdAt', 'updatedAt'])
+        && d.status in ['DRAFT', 'OPEN', 'CLOSED']
+        && nonEmpty(d.title, 120)
+        && d.criteria.minCgpa is number && d.criteria.minCgpa >= 0 && d.criteria.minCgpa <= 10
+        && d.criteria.maxActiveBacklogs is int && d.criteria.maxActiveBacklogs >= 0
+        && d.criteria.eligibleBranches is list && d.criteria.graduationYears is list
+        && d.stages is list && d.stages.size() >= 2
+        && (d.status == 'DRAFT' || d.deadline is timestamp);
+    }
+
+    match /placementDrives/{id} {
+      // Students never see drafts; their queries must ask for status in [OPEN, CLOSED].
+      allow read: if signedIn() && (isOfficer() || resource.data.status in ['OPEN', 'CLOSED']);
+      allow create, update: if isOfficer() && driveValid(incoming());
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------ applications
+    // Server-side mirror of EligibilityEngine (parity is tested with the same boundary values),
+    // plus integrity of every denormalised field against the real drive and profile.
+    function eligibleAndConsistent(driveId, uid) {
+      let d = get(/databases/$(db)/documents/placementDrives/$(driveId)).data;
+      let p = get(/databases/$(db)/documents/studentProfiles/$(uid)).data;
+      let a = request.resource.data;
+      return d.status == 'OPEN'
+        && request.time < d.deadline
+        && p.academicVerified == true
+        && p.cgpa >= d.criteria.minCgpa
+        && p.branch in d.criteria.eligibleBranches
+        && p.activeBacklogs <= d.criteria.maxActiveBacklogs
+        && p.graduationYear in d.criteria.graduationYears
+        && a.driveTitle == d.title
+        && a.companyName == d.companyName
+        && a.studentName == p.name
+        && a.studentRoll == p.rollNumber
+        && a.profileSnapshot == {'cgpa': p.cgpa, 'branch': p.branch,
+                                 'activeBacklogs': p.activeBacklogs, 'graduationYear': p.graduationYear};
+    }
+
+    match /applications/{appId} {
+      allow read: if signedIn() && (isOfficer() || resource.data.studentId == me());
+      // Deterministic id {driveId}_{uid}: a second "create" is an update, which students cannot do,
+      // so duplicate applications are rejected by the server.
+      allow create: if isStudent()
+        && incoming().keys().hasOnly(['driveId', 'studentId', 'driveTitle', 'companyName', 'studentName', 'studentRoll',
+                                      'profileSnapshot', 'matchScore', 'status', 'currentStage', 'stageHistory',
+                                      'appliedAt', 'updatedAt'])
+        && appId == incoming().driveId + '_' + me()
+        && incoming().studentId == me()
+        && incoming().status == 'SUBMITTED'
+        && incoming().currentStage == 0
+        && incoming().stageHistory == []
+        && incoming().matchScore is int && incoming().matchScore >= 0 && incoming().matchScore <= 100
+        && incoming().appliedAt == request.time
+        && incoming().updatedAt == request.time
+        && eligibleAndConsistent(incoming().driveId, me());
+      // Only officers record outcomes: one stage at a time, one history entry, final states immutable.
+      allow update: if isOfficer()
+        && changed().hasOnly(['status', 'currentStage', 'stageHistory', 'updatedAt'])
+        && !(resource.data.status in ['SELECTED', 'REJECTED'])
+        && incoming().status in ['IN_PROGRESS', 'SELECTED', 'REJECTED']
+        && incoming().currentStage is int
+        && incoming().currentStage >= resource.data.currentStage
+        && incoming().currentStage <= resource.data.currentStage + 1
+        && incoming().stageHistory is list
+        && incoming().stageHistory.size() == resource.data.stageHistory.size() + 1
+        && incoming().updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------ readiness activities
+    function activityValid(a) {
+      return a.keys().hasOnly(['type', 'title', 'scorePercent', 'rating', 'durationMin', 'date', 'createdAt'])
+        && a.type in ['APTITUDE', 'CODING', 'INTERVIEW', 'SKILLS']
+        && nonEmpty(a.title, 120)
+        && a.durationMin is int && a.durationMin >= 1 && a.durationMin <= 1440
+        && (a.get('scorePercent', null) == null || (a.scorePercent is int && a.scorePercent >= 0 && a.scorePercent <= 100))
+        && (a.get('rating', null) == null || (a.rating is int && a.rating >= 1 && a.rating <= 5))
+        && a.date is timestamp;
+    }
+
+    match /readinessProgress/{uid}/activities/{actId} {
+      allow read: if signedIn() && (me() == uid || isOfficer());
+      allow create, update: if isStudent() && me() == uid && activityValid(incoming());
+      allow delete: if isStudent() && me() == uid;
+    }
+
+    // ------------------------------------------------------------------ notifications
+    match /notifications/{id} {
+      allow read: if signedIn() && (isOfficer() || resource.data.audience == 'ALL' || resource.data.targetUid == me());
+      allow create: if isOfficer()
+        && incoming().keys().hasOnly(['title', 'body', 'audience', 'targetUid', 'driveId', 'applicationId', 'createdBy', 'createdAt'])
+        && incoming().createdBy == me()
+        && incoming().createdAt == request.time
+        && nonEmpty(incoming().title, 200) && nonEmpty(incoming().body, 2000)
+        && (incoming().audience == 'ALL' || (incoming().audience == 'STUDENT' && incoming().targetUid is string));
+      allow update, delete: if isOfficer();
+    }
+  }
+}

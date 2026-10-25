@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nx_primary">#BAC2FF</color>
+    <color name="nx_on_primary">#0E1A8C</color>
+    <color name="nx_primary_container">#2C3AB6</color>
+    <color name="nx_on_primary_container">#E0E3FF</color>
+    <color name="nx_secondary">#72D9BC</color>
+    <color name="nx_on_secondary">#00382B</color>
+    <color name="nx_secondary_container">#005140</color>
+    <color name="nx_on_secondary_container">#C9F2E4</color>
+    <color name="nx_background">#0F111A</color>
+    <color name="nx_on_surface">#E4E6F1</color>
+    <color name="nx_on_surface_variant">#AAB0C4</color>
+    <color name="nx_surface_variant">#23273A</color>
+    <color name="nx_outline">#6C7186</color>
+    <color name="nx_outline_variant">#2B2F42</color>
+    <color name="nx_surface_lowest">#171A26</color>
+    <color name="nx_surface_low">#141723</color>
+    <color name="nx_surface_container">#1C1F2D</color>
+    <color name="nx_surface_high">#232737</color>
+    <color name="nx_surface_highest">#2B2F41</color>
+    <color name="nx_error">#FFB4AB</color>
+    <color name="nx_on_error">#690005</color>
+    <color name="nx_error_container">#93000A</color>
+
+    <color name="nx_success">#7FDB9E</color>
+    <color name="nx_success_container">#163C24</color>
+    <color name="nx_warning">#F4C46F</color>
+    <color name="nx_warning_container">#43310B</color>
+    <color name="nx_danger">#FFB4AB</color>
+    <color name="nx_danger_container">#5B1C17</color>
+    <color name="nx_neutral">#AAB0C4</color>
+    <color name="nx_neutral_container">#262A3C</color>
+    <color name="nx_offline">#3A4060</color>
+</resources>

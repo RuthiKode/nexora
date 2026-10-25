@@ -1,0 +1,16 @@
+{
+  "name": "nexora-firebase",
+  "private": true,
+  "description": "NEXORA Firestore rules, rules tests and seed data (Emulator Suite, Spark plan)",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-nexora \"node --test tests/rules.test.js\"",
+    "emulators": "firebase emulators:start --project demo-nexora",
+    "seed": "node seed/seed.js --emulator"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.0.0",
+    "firebase-admin": "^14.0.0",
+    "firebase-tools": "^15.0.0"
+  }
+}

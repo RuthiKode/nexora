@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placement readiness dashboard: overall ring, component bars, 6-week chart, suggestions,
+     relevant upcoming drives and recent activity log. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:paddingBottom="96dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    style="@style/Nexora.CardBody"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.nexora.ui.ChartView
+                        android:id="@+id/overall_ring"
+                        android:layout_width="112dp"
+                        android:layout_height="112dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/overall_readiness"
+                            android:textAppearance="@style/TextAppearance.Nexora.Title" />
+
+                        <TextView
+                            android:id="@+id/window_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textAppearance="@style/TextAppearance.Nexora.Body"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/readiness_disclaimer"
+                            android:textAppearance="@style/TextAppearance.Nexora.Caption" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:text="@string/components" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/component_bars"
+                    style="@style/Nexora.CardBody" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:text="@string/last_six_weeks" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout style="@style/Nexora.CardBody">
+
+                    <com.nexora.ui.ChartView
+                        android:id="@+id/weekly_chart"
+                        android:layout_width="match_parent"
+                        android:layout_height="170dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/weekly_caption"
+                        android:textAppearance="@style/TextAppearance.Nexora.Caption" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:text="@string/suggestions" />
+
+            <LinearLayout
+                android:id="@+id/suggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:text="@string/relevant_drives" />
+
+            <LinearLayout
+                android:id="@+id/relevant_drives"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/relevant_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_relevant_drives"
+                android:textAppearance="@style/TextAppearance.Nexora.Caption"
+                android:visibility="gone" />
+
+            <TextView
+                style="@style/Nexora.Section"
+                android:text="@string/recent_activity" />
+
+            <LinearLayout
+                android:id="@+id/recent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/recent_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_activity"
+                android:textAppearance="@style/TextAppearance.Nexora.Caption"
+                android:visibility="gone" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/log_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="@string/log_activity"
+        app:icon="@drawable/ic_add"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+</FrameLayout>

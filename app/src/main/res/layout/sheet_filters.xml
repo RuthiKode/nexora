@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drive filter & sort bottom sheet. -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/filter_and_sort"
+            android:textAppearance="@style/TextAppearance.Nexora.Headline" />
+
+        <TextView
+            style="@style/Nexora.Section"
+            android:layout_marginTop="12dp"
+            android:text="@string/sort_by" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/f_sort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            style="@style/Nexora.Section"
+            android:text="@string/job_type" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/f_jobtype"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/Nexora.Section"
+            android:text="@string/role_category" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/f_role"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/f_location_layout"
+            style="@style/Nexora.Field"
+            android:hint="@string/location"
+            app:endIconMode="clear_text"
+            app:startIconDrawable="@drawable/ic_place">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/f_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/f_package_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textAppearance="@style/TextAppearance.Nexora.Body" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/f_package"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/min_package"
+            android:stepSize="1"
+            android:valueFrom="0"
+            android:valueTo="50" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/f_eligible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/eligible_only" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/f_bookmarked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/bookmarked_only" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/f_open"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/open_only" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/f_reset"
+                style="@style/Widget.Nexora.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="@string/reset" />
+
+            <Button
+                android:id="@+id/f_apply"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/show_results" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

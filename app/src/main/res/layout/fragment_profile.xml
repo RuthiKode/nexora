@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Student profile: identity, academic record (locked once verified), skills, roles, certifications, links. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        style="@style/Nexora.CardBody"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/p_avatar"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_circle"
+                            android:backgroundTint="?attr/colorPrimaryContainer"
+                            android:gravity="center"
+                            android:importantForAccessibility="no"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                            android:textColor="?attr/colorOnPrimaryContainer" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/p_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Nexora.Headline" />
+
+                            <TextView
+                                android:id="@+id/p_email"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Nexora.Caption" />
+
+                            <TextView
+                                android:id="@+id/p_status"
+                                style="@style/Nexora.Badge"
+                                android:layout_marginTop="6dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    style="@style/Nexora.Section"
+                    android:text="@string/personal" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/name_layout"
+                    style="@style/Nexora.Field"
+                    android:layout_marginTop="0dp"
+                    android:hint="@string/full_name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName|textCapWords" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    style="@style/Nexora.Section"
+                    android:text="@string/academic_record" />
+
+                <TextView
+                    android:id="@+id/academic_note"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:textAppearance="@style/TextAppearance.Nexora.Caption"
+                    app:drawableStartCompat="@drawable/ic_lock"
+                    app:drawableTint="?attr/colorOnSurfaceVariant" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/roll_layout"
+                    style="@style/Nexora.Field"
+                    android:hint="@string/roll_number">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/roll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapCharacters" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/branch_layout"
+                    style="@style/Widget.Nexora.TextInput.Dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/branch">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/branch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/cgpa_layout"
+                        style="@style/Nexora.Field"
+                        android:layout_width="0dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:hint="@string/cgpa">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/cgpa"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/backlogs_layout"
+                        style="@style/Nexora.Field"
+                        android:layout_width="0dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:hint="@string/active_backlogs">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/backlogs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/year_layout"
+                    style="@style/Nexora.Field"
+                    android:hint="@string/graduation_year">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/year"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    style="@style/Nexora.Section"
+                    android:text="@string/skills" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/skill_layout"
+                    style="@style/Nexora.Field"
+                    android:layout_marginTop="0dp"
+                    android:hint="@string/add_skill"
+                    app:endIconContentDescription="@string/add"
+                    app:endIconDrawable="@drawable/ic_add"
+                    app:endIconMode="custom"
+                    app:helperText="@string/skill_helper">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/skill_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/skill_chips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    style="@style/Nexora.Section"
+                    android:text="@string/preferred_roles" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/role_chips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    style="@style/Nexora.Section"
+                    android:text="@string/certifications" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/cert_layout"
+                    style="@style/Nexora.Field"
+                    android:layout_marginTop="0dp"
+                    android:hint="@string/add_certification"
+                    app:endIconContentDescription="@string/add"
+                    app:endIconDrawable="@drawable/ic_add"
+                    app:endIconMode="custom">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/cert_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cert_chips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    style="@style/Nexora.Section"
+                    android:text="@string/resume_links" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/resume_layout"
+                    style="@style/Nexora.Field"
+                    android:layout_marginTop="0dp"
+                    android:hint="@string/resume_url"
+                    app:helperText="@string/resume_helper"
+                    app:startIconDrawable="@drawable/ic_link">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/resume"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/linkedin_layout"
+                    style="@style/Nexora.Field"
+                    android:hint="@string/linkedin_url">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/linkedin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/github_layout"
+                    style="@style/Nexora.Field"
+                    android:hint="@string/github_url">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/github"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/summary_layout"
+                    style="@style/Nexora.Field"
+                    android:hint="@string/summary"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="400">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:minLines="3" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <include
+            android:id="@+id/state"
+            layout="@layout/view_state" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceContainerLowest"
+        android:elevation="6dp"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save_profile" />
+    </LinearLayout>
+</LinearLayout>

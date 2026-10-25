@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light tokens. Dark equivalents live in values-night/colors.xml. -->
+    <color name="nx_primary">#3B4BDB</color>
+    <color name="nx_on_primary">#FFFFFF</color>
+    <color name="nx_primary_container">#E0E3FF</color>
+    <color name="nx_on_primary_container">#0B1680</color>
+    <color name="nx_secondary">#0E8F72</color>
+    <color name="nx_on_secondary">#FFFFFF</color>
+    <color name="nx_secondary_container">#C9F2E4</color>
+    <color name="nx_on_secondary_container">#00382B</color>
+    <color name="nx_background">#F6F7FB</color>
+    <color name="nx_on_surface">#161A2B</color>
+    <color name="nx_on_surface_variant">#555B70</color>
+    <color name="nx_surface_variant">#ECEEF6</color>
+    <color name="nx_outline">#9EA3B5</color>
+    <color name="nx_outline_variant">#E2E4EE</color>
+    <color name="nx_surface_lowest">#FFFFFF</color>
+    <color name="nx_surface_low">#F1F2F8</color>
+    <color name="nx_surface_container">#ECEEF5</color>
+    <color name="nx_surface_high">#E6E8F1</color>
+    <color name="nx_surface_highest">#E0E2EC</color>
+    <color name="nx_error">#BA1A1A</color>
+    <color name="nx_on_error">#FFFFFF</color>
+    <color name="nx_error_container">#FFDAD6</color>
+
+    <!-- Semantic status colours: text colour on its container colour. -->
+    <color name="nx_success">#1A7F3C</color>
+    <color name="nx_success_container">#DDF4E4</color>
+    <color name="nx_warning">#9A5B00</color>
+    <color name="nx_warning_container">#FFEFD2</color>
+    <color name="nx_danger">#B3261E</color>
+    <color name="nx_danger_container">#FDE3E1</color>
+    <color name="nx_neutral">#555B70</color>
+    <color name="nx_neutral_container">#ECEEF6</color>
+    <color name="nx_offline">#2A2F45</color>
+    <color name="nx_brand">#3B4BDB</color>
+    <color name="nx_brand_dark">#2A36A8</color>
+</resources>
