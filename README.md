@@ -12,9 +12,18 @@ The full specification is in `NEXORA_PLAN.md` (kept outside the repo). This READ
 
 ---
 
+## 0. Which backend does a build use?
+
+- **`app/google-services.json` present** (the live setup, project `nexora-a014b`): every build, including Android Studio's ▶ Run, uses the **real Firebase project**. Sign-up and login work on any device with internet.
+- **No `google-services.json`**: debug builds use the local **Firebase Emulator Suite** (§1).
+- Override either way with `-Pnexora.useEmulator=true|false`.
+
+**Live demo layout:** the placement officer signs in on the Android Studio emulator, and the student uses a physical phone. Both talk to the same Firestore project, so every action appears live on the other device.
+- If the emulator shows network errors while the laptop is online, cold-boot it with fixed DNS: `emulator -avd Pixel_6a -no-snapshot-load -dns-server 8.8.8.8,1.1.1.1`.
+
 ## 1. Running it locally (no Firebase project needed)
 
-Debug builds talk to the **Firebase Emulator Suite** using the offline `demo-nexora` project, so no console setup or credentials are needed.
+Without `google-services.json`, debug builds talk to the **Firebase Emulator Suite** using the offline `demo-nexora` project, so no console setup or credentials are needed.
 
 Prerequisites:
 - Android Studio (its bundled JBR 21 is fine for Gradle and the emulators).
@@ -63,19 +72,14 @@ These console steps are manual and not automated:
    ```bash
    cd firebase && npx firebase deploy --only firestore:rules,firestore:indexes --project <your-project-id>
    ```
-4. Create the officer account and demo data. Use a service-account key from *Project settings → Service accounts*, and never commit it:
+4. Create accounts in the app. **Create account** offers **Student** or **Placement officer**; an officer account opens the officer portal directly. Optional demo data can be loaded with the Admin SDK seed script and a service-account key (never commit it):
    ```bash
    cd firebase && node seed/seed.js --service-account ./service-account.json
    ```
-   To create an officer manually instead:
-   - Create the user in Authentication.
-   - Add `users/{uid}` with `role: "OFFICER"` in the console.
-   - The app has no officer sign-up.
-5. Build against the real project:
+5. Build and install. With `google-services.json` in `app/`, the normal build targets the real project:
    ```bash
-   ./gradlew installDebug -Pnexora.useEmulator=false
+   ./gradlew installDebug
    ```
-   Release builds always use the real project.
 6. Optional FCM: send a console message to topic `all_students`.
    - FCM is enabled only when a real `google-services.json` is present.
    - No feature depends on it.
@@ -154,8 +158,9 @@ I hardened the plan's §6 draft after auditing it. The gaps found and fixed:
 6. **Schema checks.** Profiles have type/range checks (CGPA 0–10, backlogs int 0–30, branch enum, roll-number pattern). Readiness activities and notifications have schema checks, and notifications must carry `createdBy == officer`.
 7. **Draft queries.** Draft drives use `status in ['OPEN','CLOSED']`, so student queries are provably safe.
 
+**Project decision — open officer sign-up.** Registration accepts role `STUDENT` or `OFFICER`, chosen once in the app; the role can never be changed afterwards from the client, and an officer cannot also create a student profile. This keeps a college demo simple. The trade-off is that anyone with the APK can create an officer account; a production deployment would require officer approval instead.
+
 Rules unchanged from the plan's intent:
-- Self-registration is always `STUDENT`.
 - Application ids are deterministic (`{driveId}_{uid}`). A second create is an update, which students are denied, so duplicates are rejected.
 - Closed, expired, draft and ineligible drives are rejected at create.
 
@@ -219,6 +224,6 @@ The rules tests cover:
 - **Cached role.** The role is cached for instant and offline start, then re-verified from the server on every launch. Data access is always enforced by the rules.
 - **Not yet done:**
   - The full Espresso journeys from plan §9.3 (register → apply; officer create → publish) were exercised manually via adb, not as automated Espresso tests.
-  - A rehearsal on a physical device against a real Firebase project is still to do.
   - The §9.4 usability study.
-- **Officer edge case.** An officer account created in Auth *without* a `users` doc becomes a STUDENT on first login. Provision the `users` doc first; the seed script does this.
+- **Open officer sign-up.** Anyone with the APK can register as a placement officer (see §4).
+- **Officer edge case.** An account created in the Authentication console *without* a `users` doc becomes a STUDENT on first login.

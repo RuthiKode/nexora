@@ -137,8 +137,7 @@ public final class ProfileScreens {
         }
 
         private void addSkill() {
-            String s = MatchScoreCalculator.normalizeSkill(UiKit.text(skillL));
-            if (!s.isEmpty() && !skills.contains(s)) skills.add(s);
+            for (String s : MatchScoreCalculator.parseSkills(UiKit.text(skillL))) if (!skills.contains(s)) skills.add(s);
             UiKit.setText(skillL, null);
             renderChips();
         }

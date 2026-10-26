@@ -93,6 +93,58 @@ public final class Analytics {
         return new int[]{average(applicants, overallByStudent), average(selected, overallByStudent)};
     }
 
+    // ---------------------------------------------------------------- preparation insights
+
+    /** Aggregates covering fewer students than this are withheld so no individual can be singled out. */
+    public static final int MIN_GROUP = 3;
+
+    /** Aggregate-only preparation insights: no uids, names or per-student values. */
+    public static final class PrepInsights {
+        public int studentsWithReadiness, studentsTargeting;
+        /** Average readiness per component; empty when fewer than {@link #MIN_GROUP} students. */
+        public final Map<Models.Component, Integer> componentAverages = new java.util.EnumMap<>(Models.Component.class);
+        /** Missing required skill → number of eligible students lacking it (top 5); empty below MIN_GROUP. */
+        public final Map<String, Integer> skillGaps = new LinkedHashMap<>();
+    }
+
+    /**
+     * Reuses the readiness reports already computed per student and the eligibility/match engines:
+     * a skill gap is a required skill missing for a verified student who is ELIGIBLE for an open drive.
+     */
+    public PrepInsights preparation(List<StudentProfile> profiles, List<Drive> drives,
+                                    Map<String, ReadinessAnalyzer.Report> reports, long now) {
+        PrepInsights in = new PrepInsights();
+        in.studentsWithReadiness = reports.size();
+        if (reports.size() >= MIN_GROUP) {
+            for (Models.Component c : Models.Component.values()) {
+                double sum = 0;
+                for (ReadinessAnalyzer.Report r : reports.values()) sum += r.percents.get(c);
+                in.componentAverages.put(c, (int) Math.round(sum / reports.size()));
+            }
+        }
+        EligibilityEngine eligibility = new EligibilityEngine();
+        MatchScoreCalculator match = new MatchScoreCalculator();
+        Map<String, Integer> gaps = new TreeMap<>();
+        for (StudentProfile p : profiles) {
+            if (!p.academicVerified) continue;
+            Set<String> missing = new HashSet<>();
+            boolean targeting = false;
+            for (Drive d : drives) {
+                if (!d.isOpen(now) || eligibility.evaluate(p, d).status != EligibilityEngine.Status.ELIGIBLE) continue;
+                targeting = true;
+                missing.addAll(match.calculate(p, d, new java.util.EnumMap<>(Models.Component.class), 0).missingSkills);
+            }
+            if (targeting) in.studentsTargeting++;
+            for (String s : missing) gaps.merge(s, 1, Integer::sum);
+        }
+        if (in.studentsTargeting >= MIN_GROUP) {
+            List<Map.Entry<String, Integer>> sorted = new java.util.ArrayList<>(gaps.entrySet());
+            sorted.sort((a, b) -> b.getValue() - a.getValue());
+            for (Map.Entry<String, Integer> e : sorted.subList(0, Math.min(5, sorted.size()))) in.skillGaps.put(e.getKey(), e.getValue());
+        }
+        return in;
+    }
+
     private static int average(Set<String> ids, Map<String, Integer> values) {
         int n = 0;
         double sum = 0;

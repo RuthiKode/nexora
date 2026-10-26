@@ -17,6 +17,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.nexora.R;
 import com.nexora.data.Resource;
+import com.nexora.domain.CareerActionEngine;
 import com.nexora.domain.Models;
 import com.nexora.domain.Models.AppStatus;
 import com.nexora.domain.Models.Application;
@@ -110,7 +111,6 @@ public final class StudentScreens {
             });
             eligible.setAdapter(eligibleAdapter);
             root.findViewById(R.id.readiness_card).setOnClickListener(x -> main().selectTab(R.id.nav_readiness));
-            root.findViewById(R.id.verify_action).setOnClickListener(x -> main().selectTab(R.id.nav_profile));
             root.findViewById(R.id.see_all).setOnClickListener(x -> {
                 StudentViewModel.Filter f = new StudentViewModel.Filter();
                 f.eligibleOnly = true;
@@ -140,13 +140,7 @@ public final class StudentScreens {
                     : UiKit.join(" · ", p.branch, p.graduationYear == null ? null : "Batch of " + p.graduationYear,
                     p.academicVerified ? "Verified record" : null));
 
-            boolean missing = p.cgpa == null || p.branch == null || p.activeBacklogs == null || p.graduationYear == null || p.rollNumber == null;
-            root.findViewById(R.id.verify_card).setVisibility(p.academicVerified ? View.GONE : View.VISIBLE);
-            ((TextView) root.findViewById(R.id.verify_title)).setText(missing ? "Complete your academic record" : "Verification pending");
-            ((TextView) root.findViewById(R.id.verify_body)).setText(missing
-                    ? "Add your roll number, branch, CGPA, backlogs and graduation year. Every drive shows “Needs verification” until the placement office verifies them."
-                    : "The placement office is reviewing your academic record. You can browse drives now and apply once it is verified.");
-
+            bindActions(s);
             ReadinessAnalyzer.Report rep = s.readiness;
             ((ChartView) root.findViewById(R.id.readiness_ring)).setRing(rep.overall, "ready", null);
             ((TextView) root.findViewById(R.id.readiness_hint)).setText(rep.suggestions.isEmpty()
@@ -155,7 +149,8 @@ public final class StudentScreens {
             long now = System.currentTimeMillis();
             List<DriveView> eligible = new ArrayList<>(), closing = new ArrayList<>();
             for (DriveView v : s.drives) {
-                if (v.match == null || !v.drive.isOpen(now)) continue;
+                // Recommendations only list drives the student can still apply to.
+                if (v.match == null || !v.drive.isOpen(now) || v.application != null) continue;
                 eligible.add(v);
                 if (v.drive.deadline.getTime() - now <= 7 * ReadinessAnalyzer.DAY) closing.add(v);
             }
@@ -175,6 +170,42 @@ public final class StudentScreens {
                 closingList.addView(row);
             }
             root.findViewById(R.id.closing_empty).setVisibility(closing.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+
+        /** Career Action Plan: one tappable row per action, each opening the screen where it can be done. */
+        private void bindActions(StudentViewModel.Snapshot s) {
+            LinearLayout list = root.findViewById(R.id.actions_list);
+            list.removeAllViews();
+            UiKit.setOrHide(root.findViewById(R.id.actions_note), s.drivesFromCache
+                    ? "Based on saved data — may be out of date until you're back online." : null);
+            if (s.actions.isEmpty()) {
+                UiKit.criterion(list, R.drawable.ic_check, Tone.SUCCESS, "You're all caught up", null,
+                        "No pending applications, rounds or preparation gaps right now. Check back as new drives open.");
+                return;
+            }
+            android.util.TypedValue ripple = new android.util.TypedValue();
+            requireContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true);
+            for (CareerActionEngine.Action a : s.actions) {
+                int icon; Tone tone;
+                switch (a.kind) {
+                    case VERIFY: icon = R.drawable.ic_lock; tone = Tone.WARNING; break;
+                    case STAGE: icon = R.drawable.ic_schedule; tone = Tone.PRIMARY; break;
+                    case APPLY: icon = R.drawable.ic_work; tone = Tone.SUCCESS; break;
+                    case SKILL: icon = R.drawable.ic_school; tone = Tone.PRIMARY; break;
+                    case READINESS: icon = R.drawable.ic_trending; tone = Tone.PRIMARY; break;
+                    default: icon = R.drawable.ic_person; tone = Tone.NEUTRAL;
+                }
+                View row = UiKit.criterion(list, icon, tone, a.title, null, a.why + "\nNext: " + a.next);
+                row.setBackgroundResource(ripple.resourceId);
+                row.setOnClickListener(x -> {
+                    switch (a.kind) {
+                        case STAGE: main().push(JourneyFragment.of(a.applicationId, false)); break;
+                        case APPLY: main().push(DriveScreens.DetailFragment.of(a.driveId)); break;
+                        case SKILL: case READINESS: main().selectTab(R.id.nav_readiness); break;
+                        default: main().selectTab(R.id.nav_profile);
+                    }
+                });
+            }
         }
 
         private void bindNotice(Resource<List<Notice>> r) {

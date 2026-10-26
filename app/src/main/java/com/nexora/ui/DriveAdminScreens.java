@@ -229,6 +229,11 @@ public final class DriveAdminScreens {
             int year = Calendar.getInstance().get(Calendar.YEAR);
             for (String b : Models.BRANCHES) UiKit.chip(branches, b, true, false).setTag(b);
             for (int y = year; y <= year + 5; y++) UiKit.chip(years, String.valueOf(y), true, false).setTag(String.valueOf(y));
+            // Clear the criteria error as soon as the selection changes; save() re-validates.
+            ChipGroup.OnCheckedStateChangeListener clearCriteria =
+                    (g, ids) -> root.findViewById(R.id.e_criteria_error).setVisibility(View.GONE);
+            branches.setOnCheckedStateChangeListener(clearCriteria);
+            years.setOnCheckedStateChangeListener(clearCriteria);
             for (Models.Component c : Models.Component.ACTIVITY_TYPES) UiKit.chip(focus, c.label, true, false).setTag(c.name());
             List<String> roleLabels = new ArrayList<>(), jobLabels = new ArrayList<>();
             for (Models.RoleCategory r : Models.RoleCategory.values()) roleLabels.add(r.label);
@@ -237,6 +242,14 @@ public final class DriveAdminScreens {
             dropdown(jobL, jobLabels);
             skillL.setEndIconOnClickListener(x -> addSkill());
             skillL.getEditText().setOnEditorActionListener((v, a, e) -> { if (a == EditorInfo.IME_ACTION_DONE) addSkill(); return true; });
+            // Same rules as save(); errors clear as soon as a field becomes valid.
+            UiKit.revalidate(companyL, v -> companyByName(v) == null ? "Choose a company" : null);
+            UiKit.revalidate(titleL, v -> Validators.required(v, "a title"));
+            UiKit.revalidate(packageL, Validators::packageLpa);
+            UiKit.revalidate(cgpaL, Validators::minCgpa);
+            UiKit.revalidate(backlogsL, Validators::backlogs);
+            UiKit.revalidate(roleL, v -> v.isEmpty() ? "Choose a role category" : null);
+            UiKit.revalidate(jobL, v -> v.isEmpty() ? "Choose a job type" : null);
             deadlineBtn.setOnClickListener(x -> UiKit.pickDate(getChildFragmentManager(), drive.deadline, true, true, false, d -> {
                 drive.deadline = d;
                 renderDeadline();
@@ -258,6 +271,11 @@ public final class DriveAdminScreens {
                 tryBind();
             });
             vm.drives.observe(getViewLifecycleOwner(), r -> tryBind());
+        }
+
+        private Company companyByName(String name) {
+            for (Company c : companies) if (c.name.equals(name)) return c;
+            return null;
         }
 
         private void dropdown(TextInputLayout l, List<String> items) {
@@ -333,13 +351,13 @@ public final class DriveAdminScreens {
 
         private void renderDeadline() {
             deadlineBtn.setText(drive.deadline == null ? "Choose deadline" : "Deadline: " + UiKit.dateTime(drive.deadline));
+            if (drive.deadline != null) root.findViewById(R.id.e_deadline_error).setVisibility(View.GONE);
         }
 
         private void renderSkills() { UiKit.chips(skillChips, skills, s -> { skills.remove(s); renderSkills(); }); }
 
         private void addSkill() {
-            String s = MatchScoreCalculator.normalizeSkill(UiKit.text(skillL));
-            if (!s.isEmpty() && !skills.contains(s)) skills.add(s);
+            for (String s : MatchScoreCalculator.parseSkills(UiKit.text(skillL))) if (!skills.contains(s)) skills.add(s);
             UiKit.setText(skillL, null);
             renderSkills();
         }
@@ -396,8 +414,7 @@ public final class DriveAdminScreens {
             if (drive == null || !requireOnline()) return;
             collectStages();
             String companyName = UiKit.text(companyL);
-            Company company = null;
-            for (Company c : companies) if (c.name.equals(companyName)) company = c;
+            Company company = companyByName(companyName);
             boolean ok = UiKit.check(companyL, company == null ? "Choose a company" : null);
             ok &= UiKit.check(titleL, Validators.required(UiKit.text(titleL), "a title"));
             ok &= UiKit.check(packageL, Validators.packageLpa(UiKit.text(packageL)));
@@ -435,12 +452,15 @@ public final class DriveAdminScreens {
             drive.graduationYears = ys;
             drive.prepFocus = UiKit.checkedTags(focus);
             drive.requiredSkills = new ArrayList<>(skills);
+            // Publishing (draft → open) or reopening (closed → open) announces the drive to every student.
+            boolean goesLive = newStatus == DriveStatus.OPEN && !DriveStatus.OPEN.name().equals(drive.status);
             if (newStatus != null) drive.status = newStatus.name();
             officer().saveDrive(drive, r -> {
+                if (r.isSuccess() && goesLive) officer().announceDrive(drive, r.data);
                 if (!isAdded()) return;
                 if (r.isSuccess()) {
                     drive.id = r.data;
-                    UiKit.snack(getView(), newStatus == DriveStatus.OPEN ? "Drive published" : "Drive saved");
+                    UiKit.snack(getView(), goesLive ? "Drive published — students notified" : "Drive saved");
                     renderStatus();
                 } else {
                     UiKit.snack(getView(), r.message);
@@ -497,7 +517,7 @@ public final class DriveAdminScreens {
 
         private void edit(Company c) {
             int text = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS;
-            UiKit.form(requireContext(), c.id == null ? "Add company" : "Edit company", null,
+            androidx.appcompat.app.AlertDialog d = UiKit.form(requireContext(), c.id == null ? "Add company" : "Edit company", null,
                     new String[]{"Company name", "Sector (e.g. IT services)", "Website", "Short description"},
                     new String[]{c.name, c.sector, c.website, c.description},
                     new int[]{text, text, InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI,
@@ -514,6 +534,8 @@ public final class DriveAdminScreens {
                         officer().saveCompany(c, r -> UiKit.snack(getView(), r.isSuccess() ? "Company saved" : r.message));
                         return true;
                     });
+            UiKit.revalidate(d.findViewById(R.id.f1), v -> Validators.required(v, "a name"));
+            UiKit.revalidate(d.findViewById(R.id.f3), Validators::url);
         }
     }
 }

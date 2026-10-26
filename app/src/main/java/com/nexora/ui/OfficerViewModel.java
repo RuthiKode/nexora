@@ -15,11 +15,11 @@ import com.nexora.domain.Models.Company;
 import com.nexora.domain.Models.Drive;
 import com.nexora.domain.Models.Notice;
 import com.nexora.domain.Models.StudentProfile;
+import com.nexora.domain.ReadinessAnalyzer;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +32,8 @@ public class OfficerViewModel extends AndroidViewModel {
     public final LiveData<Resource<List<StudentProfile>>> profiles;
     public final LiveData<Resource<List<Application>>> applications;
     public final LiveData<Resource<List<Notice>>> notices;
-    /** Overall readiness per student uid, loaded on demand for analytics. */
-    public final MutableLiveData<Resource<Map<String, Integer>>> readiness = new MutableLiveData<>();
+    /** Readiness report per student uid, loaded on demand for analytics. */
+    public final MutableLiveData<Resource<Map<String, ReadinessAnalyzer.Report>>> readiness = new MutableLiveData<>();
 
     public OfficerViewModel(@NonNull android.app.Application app) {
         super(app);
@@ -121,26 +121,37 @@ public class OfficerViewModel extends AndroidViewModel {
     }
 
     public void announce(String title, String body, Resource.Callback<Void> cb) {
-        c.placement.publishAnnouncement(title, body, uid, cb);
+        c.placement.publishAnnouncement(title, body, uid, null, cb);
     }
 
-    /** Loads activities of every applicant and computes their overall readiness. */
+    /** Broadcast for a newly opened drive; tapping the notification opens the drive. Best effort. */
+    public void announceDrive(Drive d, String driveId) {
+        String title = "New drive: " + d.title + " · " + d.companyName;
+        String body = UiKit.join(" · ", UiKit.lpa(d.packageLpa), d.location,
+                d.deadline == null ? null : "Apply by " + UiKit.date(d.deadline))
+                + ". Open NEXORA to check your eligibility and match score.";
+        c.placement.publishAnnouncement(title, body, uid, driveId, r -> { });
+    }
+
+    /**
+     * Loads every student's activities and computes their readiness report with the existing analyzer.
+     * Used for applicant/selected averages and aggregate preparation insights.
+     */
     public void loadReadiness() {
-        LinkedHashSet<String> ids = new LinkedHashSet<>();
-        for (Application a : data(applications)) ids.add(a.studentId);
+        List<String> ids = new ArrayList<>();
+        for (StudentProfile p : data(profiles)) ids.add(p.uid);
         if (ids.isEmpty()) {
             readiness.setValue(Resource.success(new HashMap<>()));
             return;
         }
         readiness.setValue(Resource.loading(null));
-        c.readiness.fetchFor(new ArrayList<>(ids))
+        c.readiness.fetchFor(ids)
                 .addOnSuccessListener(byStudent -> {
-                    Map<String, Integer> out = new HashMap<>();
+                    Map<String, ReadinessAnalyzer.Report> out = new HashMap<>();
                     long now = System.currentTimeMillis();
                     for (Map.Entry<String, List<Activity>> e : byStudent.entrySet()) {
                         StudentProfile p = profile(e.getKey());
-                        if (p == null) continue;
-                        out.put(e.getKey(), c.readinessAnalyzer.analyze(p, e.getValue(), new ArrayList<>(), now).overall);
+                        if (p != null) out.put(e.getKey(), c.readinessAnalyzer.analyze(p, e.getValue(), new ArrayList<>(), now));
                     }
                     readiness.setValue(Resource.success(out));
                 })

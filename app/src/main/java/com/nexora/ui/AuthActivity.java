@@ -35,6 +35,7 @@ public class AuthActivity extends AppCompatActivity {
     private NexoraApp.AppContainer c;
     private View routing, onboarding, authContent;
     private TextInputLayout nameL, emailL, passwordL;
+    private MaterialButtonToggleGroup roleGroup;
     private Button submit, forgot;
     private View progress;
     private boolean registerMode;
@@ -125,6 +126,7 @@ public class AuthActivity extends AppCompatActivity {
 
     private void setupAuthForm() {
         nameL = findViewById(R.id.name_layout);
+        roleGroup = findViewById(R.id.role_group);
         emailL = findViewById(R.id.email_layout);
         passwordL = findViewById(R.id.password_layout);
         submit = findViewById(R.id.submit);
@@ -135,14 +137,14 @@ public class AuthActivity extends AppCompatActivity {
             if (!checked) return;
             registerMode = id == R.id.mode_register;
             nameL.setVisibility(registerMode ? View.VISIBLE : View.GONE);
+            roleGroup.setVisibility(registerMode ? View.VISIBLE : View.GONE);
             forgot.setVisibility(registerMode ? View.GONE : View.VISIBLE);
             submit.setText(registerMode ? R.string.create_account : R.string.sign_in);
             ((TextView) findViewById(R.id.auth_title)).setText(registerMode ? "Create your account" : getString(R.string.welcome_back));
-            ((TextView) findViewById(R.id.auth_subtitle)).setText(registerMode
-                    ? "Student accounts only. Your academic record is verified by the placement office."
-                    : getString(R.string.sign_in_subtitle));
+            updateRegisterSubtitle();
             passwordL.setHelperText(registerMode ? "At least 8 characters" : null);
         });
+        roleGroup.addOnButtonCheckedListener((g, id, checked) -> { if (checked) updateRegisterSubtitle(); });
         submit.setOnClickListener(v -> submit());
         if (passwordL.getEditText() != null) {
             passwordL.getEditText().setOnEditorActionListener((tv, action, ev) -> { submit(); return true; });
@@ -158,6 +160,14 @@ public class AuthActivity extends AppCompatActivity {
                 }));
     }
 
+    private boolean officerSelected() { return roleGroup.getCheckedButtonId() == R.id.role_officer; }
+
+    private void updateRegisterSubtitle() {
+        ((TextView) findViewById(R.id.auth_subtitle)).setText(!registerMode ? getString(R.string.sign_in_subtitle)
+                : officerSelected() ? "Placement officers verify students, run drives and manage applicants."
+                : "Your academic record is verified by the placement office before you can apply.");
+    }
+
     private void submit() {
         String email = UiKit.text(emailL), pw = passwordL.getEditText() == null ? "" : passwordL.getEditText().getText().toString();
         boolean ok = UiKit.check(emailL, Validators.email(email));
@@ -170,7 +180,7 @@ public class AuthActivity extends AppCompatActivity {
             if (r.isSuccess()) open(r.data);
             else UiKit.snack(authContent, r.message);
         };
-        if (registerMode) c.auth.register(UiKit.text(nameL), email, pw, done);
+        if (registerMode) c.auth.register(UiKit.text(nameL), email, pw, officerSelected(), done);
         else c.auth.signIn(email, pw, done);
     }
 

@@ -209,4 +209,144 @@ public class ReadinessWorkflowTest {
         d.stages = d.stages.subList(0, 1);
         try { wf.advance(submitted(), d, null, new Date(Fx.NOW)); fail(); } catch (IllegalStateException expected) { }
     }
+
+    // ---------------------------------------------------------------- CareerActionEngine
+
+    private final CareerActionEngine career = new CareerActionEngine();
+    private final MatchScoreCalculator calc = new MatchScoreCalculator();
+
+    /** Builds an opportunity exactly like StudentViewModel: real eligibility, decision and match results. */
+    private CareerActionEngine.Opportunity opp(StudentProfile p, Drive d, Application app, ReadinessAnalyzer.Report rep) {
+        CareerActionEngine.Opportunity o = new CareerActionEngine.Opportunity();
+        o.drive = d;
+        o.eligibility = engine.evaluate(p, d);
+        o.application = app;
+        o.decision = wf.canApply(o.eligibility, d, app, Fx.NOW);
+        if (MatchScoreCalculator.applies(o.eligibility)) o.match = calc.calculate(p, d, rep.percents, rep.overall);
+        return o;
+    }
+
+    private static Drive drive(String id, int deadlineDays, String... skills) {
+        Drive d = Fx.drive();
+        d.id = id; d.title = "Role " + id;
+        d.deadline = new Date(Fx.NOW + deadlineDays * DAY);
+        d.requiredSkills = Arrays.asList(skills);
+        return d;
+    }
+
+    private static StudentProfile ready(StudentProfile p) {
+        p.skills = new ArrayList<>(Arrays.asList("java", "sql", "git"));
+        p.certifications = Collections.singletonList("AWS");
+        p.resumeUrl = "https://drive.google.com/r"; p.summary = "s"; p.githubUrl = "https://github.com/a";
+        return p;
+    }
+
+    private List<CareerActionEngine.Action> plan(StudentProfile p, List<Activity> acts, CareerActionEngine.Opportunity... os) {
+        return career.plan(p, Arrays.asList(os), analyzer.analyze(p, acts, new ArrayList<>(), Fx.NOW), Fx.NOW);
+    }
+
+    private static List<CareerActionEngine.Action> of(List<CareerActionEngine.Action> all, CareerActionEngine.Kind k) {
+        List<CareerActionEngine.Action> out = new ArrayList<>();
+        for (CareerActionEngine.Action a : all) if (a.kind == k) out.add(a);
+        return out;
+    }
+
+    private ReadinessAnalyzer.Report report(StudentProfile p) { return analyzer.analyze(p, new ArrayList<>(), new ArrayList<>(), Fx.NOW); }
+
+    @Test public void ineligibleDrivesAreNeverApplicationRecommendations() {
+        StudentProfile rahul = ready(Fx.student(6.99, "CSE", 0, 2027, true));
+        List<CareerActionEngine.Action> acts = plan(rahul, new ArrayList<>(), opp(rahul, drive("d1", 5, "java"), null, report(rahul)));
+        assertTrue(of(acts, CareerActionEngine.Kind.APPLY).isEmpty());
+        assertTrue(of(acts, CareerActionEngine.Kind.SKILL).isEmpty()); // no prep pushed for a drive they can't apply to
+    }
+
+    @Test public void appliedClosedAndExpiredDrivesAreExcluded() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        Drive applied = drive("applied", 5), closed = drive("closed", 5), expired = drive("expired", -1), open = drive("open", 5);
+        closed.status = "CLOSED";
+        Application app = wf.newApplication(p, applied, 80);
+        List<CareerActionEngine.Action> apply = of(plan(p, new ArrayList<>(), opp(p, applied, app, report(p)),
+                opp(p, closed, null, report(p)), opp(p, expired, null, report(p)), opp(p, open, null, report(p))),
+                CareerActionEngine.Kind.APPLY);
+        assertEquals(1, apply.size());
+        assertEquals("open", apply.get(0).driveId);
+    }
+
+    @Test public void urgentEligibleOpportunitiesRankFirst() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        List<CareerActionEngine.Action> apply = of(plan(p, new ArrayList<>(),
+                opp(p, drive("later", 20), null, report(p)), opp(p, drive("soon", 1), null, report(p))), CareerActionEngine.Kind.APPLY);
+        assertEquals("soon", apply.get(0).driveId);
+        assertTrue(apply.get(0).title.startsWith("Apply soon"));
+        assertTrue(apply.get(0).priority > apply.get(1).priority);
+    }
+
+    @Test public void missingSkillsGeneratePreparationLinkedToTheDrive() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        List<CareerActionEngine.Action> skills = of(plan(p, new ArrayList<>(),
+                opp(p, drive("d1", 5, "java", "docker"), null, report(p))), CareerActionEngine.Kind.SKILL);
+        assertEquals(1, skills.size());
+        assertEquals("docker", skills.get(0).skill);
+        assertEquals("d1", skills.get(0).driveId);
+        assertFalse(skills.get(0).next.toLowerCase().contains("verified")); // practice is never claimed as proof
+    }
+
+    @Test public void readinessActionsReflectRecordedActivitiesAndUpdate() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        Drive d = drive("d1", 5); d.prepFocus = Collections.singletonList("CODING");
+        List<CareerActionEngine.Action> before = of(plan(p, new ArrayList<>(), opp(p, d, null, report(p))), CareerActionEngine.Kind.READINESS);
+        assertEquals(Component.CODING, before.get(0).component);
+        assertTrue(before.get(0).title.contains("(0%)"));
+        List<Activity> coding = new ArrayList<>();
+        for (int i = 0; i < 4; i++) coding.add(act("CODING", 90, null, 60, i));
+        ReadinessAnalyzer.Report after = analyzer.analyze(p, coding, new ArrayList<>(), Fx.NOW);
+        assertTrue(of(career.plan(p, Collections.singletonList(opp(p, d, null, after)), after, Fx.NOW),
+                CareerActionEngine.Kind.READINESS).isEmpty());
+    }
+
+    @Test public void unverifiedStudentsGetVerificationFirstAndNoApplyActions() {
+        StudentProfile kiran = ready(Fx.student(8.1, "CSE", 0, 2027, false));
+        List<CareerActionEngine.Action> acts = plan(kiran, new ArrayList<>(), opp(kiran, drive("d1", 5), null, report(kiran)));
+        assertEquals(CareerActionEngine.Kind.VERIFY, acts.get(0).kind);
+        assertTrue(of(acts, CareerActionEngine.Kind.APPLY).isEmpty());
+        StudentProfile incomplete = new StudentProfile();
+        assertEquals("Complete your academic record", plan(incomplete, new ArrayList<>()).get(0).title);
+    }
+
+    @Test public void upcomingStagesProduceStageActionsButFinalApplicationsDoNot() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        Drive d = drive("d1", 5);
+        d.stages.get(2).scheduledAt = new Date(Fx.NOW + 2 * DAY); // Technical Interview
+        Application app = wf.advance(wf.advance(wf.newApplication(p, d, 80), d, null, new Date(Fx.NOW)), d, null, new Date(Fx.NOW));
+        List<CareerActionEngine.Action> stage = of(plan(p, new ArrayList<>(), opp(p, d, app, report(p))), CareerActionEngine.Kind.STAGE);
+        assertEquals(1, stage.size());
+        assertEquals(app.id, stage.get(0).applicationId);
+        assertEquals(Component.CODING, stage.get(0).component);
+        assertTrue(stage.get(0).title.startsWith("Technical Interview"));
+        Application rejected = wf.reject(app, null, new Date(Fx.NOW));
+        assertTrue(of(plan(p, new ArrayList<>(), opp(p, d, rejected, report(p))), CareerActionEngine.Kind.STAGE).isEmpty());
+        d.stages.get(2).scheduledAt = new Date(Fx.NOW - DAY); // past rounds are not reminders
+        assertTrue(of(plan(p, new ArrayList<>(), opp(p, d, app, report(p))), CareerActionEngine.Kind.STAGE).isEmpty());
+    }
+
+    @Test public void recommendationsUpdateWhenProfileChanges() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        Drive d = drive("d1", 5, "docker");
+        assertEquals(1, of(plan(p, new ArrayList<>(), opp(p, d, null, report(p))), CareerActionEngine.Kind.SKILL).size());
+        p.skills = new ArrayList<>(p.skills);
+        p.skills.add("Docker");
+        assertTrue(of(plan(p, new ArrayList<>(), opp(p, d, null, report(p))), CareerActionEngine.Kind.SKILL).isEmpty());
+    }
+
+    @Test public void emptyDataProducesAValidEmptyPlan() {
+        StudentProfile p = ready(Fx.student(8.4, "CSE_AI", 0, 2027, true));
+        List<Activity> strong = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            strong.add(act("APTITUDE", 90, null, 30, i)); strong.add(act("CODING", 90, null, 30, i));
+            strong.add(act("INTERVIEW", null, 5, 30, i)); strong.add(act("SKILLS", null, null, 200, i));
+        }
+        assertTrue(plan(p, strong).isEmpty());
+        assertTrue(career.plan(p, new ArrayList<CareerActionEngine.Opportunity>(), null, Fx.NOW).isEmpty());
+        assertTrue(plan(p, new ArrayList<>()).size() <= CareerActionEngine.MAX_ACTIONS);
+    }
 }

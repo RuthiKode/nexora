@@ -186,6 +186,36 @@
                         android:text="@string/sign_in_subtitle"
                         android:textAppearance="@style/TextAppearance.Nexora.Caption" />
 
+                    <!-- Account type, shown only when creating an account. -->
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/role_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone"
+                        app:checkedButton="@id/role_student"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <Button
+                            android:id="@+id/role_student"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/role_student"
+                            app:icon="@drawable/ic_school" />
+
+                        <Button
+                            android:id="@+id/role_officer"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/role_officer"
+                            app:icon="@drawable/ic_business" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/name_layout"
                         style="@style/Nexora.Field"

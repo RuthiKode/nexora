@@ -47,11 +47,26 @@ public final class AuthRepository {
                 .addOnFailureListener(e -> cb.onResult(Resource.error(authMessage(e), null)));
     }
 
-    /** Self-registration always creates a STUDENT; officer accounts are provisioned by the seed script. */
-    public void register(String name, String email, String password, Resource.Callback<String> cb) {
+    /** Registers a STUDENT (users + studentProfiles) or a placement OFFICER (users document only). */
+    public void register(String name, String email, String password, boolean officer, Resource.Callback<String> cb) {
         auth.createUserWithEmailAndPassword(email.trim(), password)
-                .addOnSuccessListener(r -> createStudentDocs(name.trim(), email(), cb))
+                .addOnSuccessListener(r -> {
+                    if (officer) createOfficerDoc(name.trim(), email(), cb);
+                    else createStudentDocs(name.trim(), email(), cb);
+                })
                 .addOnFailureListener(e -> cb.onResult(Resource.error(authMessage(e), null)));
+    }
+
+    private void createOfficerDoc(String name, String email, Resource.Callback<String> cb) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("uid", uid());
+        user.put("name", name);
+        user.put("email", email);
+        user.put("role", Models.ROLE_OFFICER);
+        user.put("createdAt", FieldValue.serverTimestamp());
+        db.collection(FirestoreMapper.USERS).document(uid()).set(user)
+                .addOnSuccessListener(v -> cb.onResult(Resource.success(Models.ROLE_OFFICER)))
+                .addOnFailureListener(e -> cb.onResult(Resource.error(FirestoreMapper.errorMessage(e), null)));
     }
 
     /** Reads users/{uid}.role. If the user document is missing (interrupted registration) it is completed as STUDENT. */

@@ -236,11 +236,12 @@ public final class PlacementRepository {
                 .orderBy("createdAt", Query.Direction.DESCENDING).limit(100), FirestoreMapper::notice);
     }
 
-    public void publishAnnouncement(String title, String body, String officerUid, Resource.Callback<Void> cb) {
+    public void publishAnnouncement(String title, String body, String officerUid, String driveId, Resource.Callback<Void> cb) {
         Notice n = new Notice();
         n.title = title;
         n.body = body;
         n.audience = Notice.ALL;
+        n.driveId = driveId;
         n.createdBy = officerUid;
         Map<String, Object> m = FirestoreMapper.noticeMap(n);
         m.put("createdAt", FieldValue.serverTimestamp());

@@ -179,6 +179,15 @@ public class EligibilityMatchTest {
         assertTrue(r.reasons.get(0).contains("3 of 4 required skills (missing: docker)"));
     }
 
+    @Test public void commaSeparatedSkillInputBecomesSeparateSkills() {
+        assertEquals(Arrays.asList("java", "sql"), MatchScoreCalculator.parseSkills("java, sql"));
+        assertEquals(Arrays.asList("javascript", "c++", "machine learning"),
+                MatchScoreCalculator.parseSkills(" JS ;cpp,, ML ,js"));
+        assertEquals(Collections.singletonList("python"), MatchScoreCalculator.parseSkills("Python"));
+        assertTrue(MatchScoreCalculator.parseSkills(" , ").isEmpty());
+        assertTrue(MatchScoreCalculator.parseSkills(null).isEmpty());
+    }
+
     @Test public void preferenceScores() {
         StudentProfile p = Fx.student(8, "CSE", 0, 2027, true);
         Drive d = Fx.drive();

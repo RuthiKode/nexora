@@ -37,13 +37,17 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="forgot_password">Forgot password?</string>
-    <string name="officer_note">Placement officer accounts are issued by the placement office.</string>
+    <string name="officer_note">Choose Student or Placement officer when you create your account.</string>
+    <string name="role_student">Student</string>
+    <string name="role_officer">Placement officer</string>
 
     <!-- Student home -->
     <string name="open_profile">Open profile</string>
     <string name="placement_readiness">Placement readiness</string>
     <string name="view_dashboard">View dashboard</string>
     <string name="eligible_for_you">Eligible for you</string>
+    <string name="next_steps">Your next steps</string>
+    <string name="prep_insights">Preparation insights</string>
     <string name="see_all">See all</string>
     <string name="closing_soon">Closing soon</string>
     <string name="nothing_closing">No eligible drives close in the next 7 days.</string>

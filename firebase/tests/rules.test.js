@@ -90,8 +90,15 @@ describe('users and roles', () => {
   it('registration creates a STUDENT', async () => {
     await assertSucceeds(setDoc(doc(db('newbie'), 'users/newbie'), newUser('STUDENT')));
   });
-  it('cannot self-register as OFFICER', async () => {
-    await assertFails(setDoc(doc(db('newbie'), 'users/newbie'), newUser('OFFICER')));
+  it('can register as OFFICER (open officer sign-up) but not with any other role', async () => {
+    await assertSucceeds(setDoc(doc(db('newbie'), 'users/newbie'), newUser('OFFICER')));
+    await assertFails(setDoc(doc(db('other'), 'users/other'), { ...newUser('ADMIN'), uid: 'other', email: 'other@nexora.test' }));
+  });
+  it('an officer cannot also create a student profile to apply to drives', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'users/off2'),
+      { uid: 'off2', name: 'Officer Two', email: 'off2@nexora.test', role: 'OFFICER' }));
+    await assertFails(setDoc(doc(db('off2'), 'studentProfiles/off2'), { name: 'Officer Two', email: 'off2@nexora.test',
+      academicVerified: false, skills: [], preferredRoles: [], certifications: [], updatedAt: serverTimestamp() }));
   });
   it('cannot create a user document for someone else', async () => {
     await assertFails(setDoc(doc(db('newbie'), 'users/other'), { ...newUser('STUDENT'), uid: 'other' }));

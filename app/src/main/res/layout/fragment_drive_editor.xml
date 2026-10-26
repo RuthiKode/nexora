@@ -34,6 +34,8 @@
 
                 <AutoCompleteTextView
                     android:id="@+id/e_company"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none" />
@@ -68,6 +70,8 @@
 
                     <AutoCompleteTextView
                         android:id="@+id/e_role"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none" />
@@ -85,6 +89,8 @@
 
                     <AutoCompleteTextView
                         android:id="@+id/e_jobtype"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none" />

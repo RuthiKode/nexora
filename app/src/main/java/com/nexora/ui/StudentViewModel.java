@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.nexora.NexoraApp;
 import com.nexora.data.Resource;
 import com.nexora.data.SyncWorker;
-import com.nexora.domain.ApplicationWorkflow;
+import com.nexora.domain.CareerActionEngine;
 import com.nexora.domain.EligibilityEngine;
 import com.nexora.domain.MatchScoreCalculator;
 import com.nexora.domain.Models;
@@ -36,14 +36,9 @@ import java.util.Set;
  */
 public class StudentViewModel extends AndroidViewModel {
 
-    /** A drive together with everything the student needs to decide about it. */
-    public static final class DriveView {
-        public Drive drive;
+    /** A drive together with everything the student needs to decide about it (engine results + UI state). */
+    public static final class DriveView extends CareerActionEngine.Opportunity {
         public Company company;
-        public EligibilityEngine.Result eligibility;
-        public MatchScoreCalculator.Result match; // null when not applicable
-        public ApplicationWorkflow.Decision decision;
-        public Application application;
         public boolean bookmarked;
     }
 
@@ -53,6 +48,8 @@ public class StudentViewModel extends AndroidViewModel {
         public ReadinessAnalyzer.Report readiness;
         public List<Application> applications = new ArrayList<>();
         public List<Activity> activities = new ArrayList<>();
+        /** Career Action Plan, recomputed from the same inputs whenever any of them changes. */
+        public List<CareerActionEngine.Action> actions = new ArrayList<>();
         public boolean drivesFromCache;
 
         public DriveView find(String driveId) {
@@ -179,6 +176,7 @@ public class StudentViewModel extends AndroidViewModel {
             v.match = c.match.calculate(s.profile, v.drive, s.readiness.percents, s.readiness.overall);
             v.match.provisional = v.eligibility.status != EligibilityEngine.Status.ELIGIBLE;
         }
+        s.actions = c.careerActions.plan(s.profile, s.drives, s.readiness, now);
         snapshot.setValue(s);
     }
 

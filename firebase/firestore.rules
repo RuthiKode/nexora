@@ -31,11 +31,12 @@ service cloud.firestore {
     // ------------------------------------------------------------------ users
     match /users/{uid} {
       allow read: if signedIn() && (me() == uid || isOfficer());
-      // Self-registration can only ever create a STUDENT. Officers are provisioned with the Admin SDK.
+      // Project decision: open sign-up as STUDENT or OFFICER (chosen once at registration).
+      // The role can never be changed afterwards from the client (see update below).
       allow create: if signedIn() && me() == uid
         && incoming().keys().hasOnly(['uid', 'name', 'email', 'role', 'createdAt', 'fcmToken'])
         && incoming().uid == uid
-        && incoming().role == 'STUDENT'
+        && incoming().role in ['STUDENT', 'OFFICER']
         && incoming().email == request.auth.token.email
         && incoming().createdAt == request.time
         && nonEmpty(incoming().name, 60);

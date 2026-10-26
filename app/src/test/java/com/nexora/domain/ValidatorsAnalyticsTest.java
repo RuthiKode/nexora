@@ -1,6 +1,7 @@
 package com.nexora.domain;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -168,6 +169,52 @@ public class ValidatorsAnalyticsTest {
         assertEquals(60, cmp[0]);
         assertEquals(80, cmp[1]);
         assertEquals(-1, an.readinessComparison(new ArrayList<>(), readiness)[0]);
+    }
+
+    // ---------------------------------------------------------------- preparation insights (officer)
+
+    private static StudentProfile student(String uid, String name, String branch, boolean verified, String... skills) {
+        StudentProfile p = Fx.student(8.0, branch, 0, 2027, verified);
+        p.uid = uid; p.name = name; p.rollNumber = "R" + uid;
+        p.skills = Arrays.asList(skills);
+        return p;
+    }
+
+    private static Map<String, ReadinessAnalyzer.Report> reports(List<StudentProfile> ps) {
+        Map<String, ReadinessAnalyzer.Report> out = new HashMap<>();
+        for (StudentProfile p : ps) out.put(p.uid, new ReadinessAnalyzer().analyze(p, new ArrayList<>(), new ArrayList<>(), Fx.NOW));
+        return out;
+    }
+
+    @Test public void preparationInsightsAreAggregateOnly() {
+        List<StudentProfile> ps = Arrays.asList(student("u1", "Aisha Khan", "CSE", true, "java"),
+                student("u2", "Rahul Verma", "CSE_AI", true), student("u3", "Kiran Das", "CSE", true, "docker"),
+                student("u4", "Meera Nair", "ME", true), student("u5", "Unverified", "CSE", false));
+        Drive d = Fx.drive();
+        d.requiredSkills = Arrays.asList("java", "docker");
+        Analytics.PrepInsights in = new Analytics().preparation(ps, Collections.singletonList(d), reports(ps), Fx.NOW);
+        assertEquals(3, in.studentsTargeting); // u4 wrong branch, u5 unverified
+        assertEquals(Integer.valueOf(2), in.skillGaps.get("java"));   // u2, u3
+        assertEquals(Integer.valueOf(2), in.skillGaps.get("docker")); // u1, u2
+        assertEquals(5, in.componentAverages.size());
+        String exposed = in.skillGaps.toString() + in.componentAverages;
+        for (StudentProfile p : ps) {
+            assertFalse(exposed.contains(p.uid));
+            assertFalse(exposed.contains(p.name));
+            assertFalse(exposed.contains(p.rollNumber));
+        }
+    }
+
+    @Test public void smallGroupsAndEmptyDataAreWithheld() {
+        List<StudentProfile> two = Arrays.asList(student("u1", "A", "CSE", true), student("u2", "B", "CSE", true));
+        Drive d = Fx.drive();
+        d.requiredSkills = Collections.singletonList("docker");
+        Analytics.PrepInsights small = new Analytics().preparation(two, Collections.singletonList(d), reports(two), Fx.NOW);
+        assertTrue(small.componentAverages.isEmpty());
+        assertTrue(small.skillGaps.isEmpty());
+        Analytics.PrepInsights empty = new Analytics().preparation(new ArrayList<>(), new ArrayList<>(), new HashMap<>(), Fx.NOW);
+        assertEquals(0, empty.studentsTargeting);
+        assertTrue(empty.componentAverages.isEmpty() && empty.skillGaps.isEmpty());
     }
 
     @Test public void seasonStartsInJuly() {

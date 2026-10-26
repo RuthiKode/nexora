@@ -17,6 +17,7 @@ import com.nexora.data.ReadinessRepository;
 import com.nexora.data.SyncWorker;
 import com.nexora.domain.Analytics;
 import com.nexora.domain.ApplicationWorkflow;
+import com.nexora.domain.CareerActionEngine;
 import com.nexora.domain.EligibilityEngine;
 import com.nexora.domain.MatchScoreCalculator;
 import com.nexora.domain.ReadinessAnalyzer;
@@ -39,6 +40,7 @@ public class NexoraApp extends Application {
         public final ReadinessAnalyzer readinessAnalyzer = new ReadinessAnalyzer();
         public final ApplicationWorkflow workflow = new ApplicationWorkflow();
         public final Analytics analytics = new Analytics();
+        public final CareerActionEngine careerActions = new CareerActionEngine();
 
         AppContainer(Context ctx) {
             firestore = FirebaseFirestore.getInstance();

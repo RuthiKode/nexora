@@ -29,7 +29,8 @@ if (googleServices.exists()) {
     firebase["appId"] = (client["client_info"] as Map<String, Any?>)["mobilesdk_app_id"].toString()
     firebase["apiKey"] = keys.first()["current_key"].toString()
 }
-val useEmulator = providers.gradleProperty("nexora.useEmulator").getOrElse("true").toBoolean()
+// Live Firebase whenever google-services.json is present; -Pnexora.useEmulator=true forces the local Emulator Suite.
+val useEmulator = providers.gradleProperty("nexora.useEmulator").getOrElse((!googleServices.exists()).toString()).toBoolean()
 val emulatorHost = providers.gradleProperty("nexora.emulatorHost").getOrElse("10.0.2.2")
 
 android {

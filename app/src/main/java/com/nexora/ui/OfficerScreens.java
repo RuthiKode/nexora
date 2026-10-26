@@ -23,6 +23,7 @@ import com.nexora.domain.Models.Application;
 import com.nexora.domain.Models.Drive;
 import com.nexora.domain.Models.Notice;
 import com.nexora.domain.Models.StudentProfile;
+import com.nexora.domain.ReadinessAnalyzer;
 import com.nexora.domain.Validators;
 import com.nexora.ui.UiKit.Tone;
 
@@ -264,8 +265,9 @@ public final class OfficerScreens {
             AutoCompleteTextView picker = root.findViewById(R.id.funnel_drive);
             picker.setOnItemClickListener((p, v, pos, id) -> { funnelIndex = pos; renderFunnel(); });
             vm.drives.observe(getViewLifecycleOwner(), r -> render());
-            vm.applications.observe(getViewLifecycleOwner(), r -> {
-                render();
+            vm.applications.observe(getViewLifecycleOwner(), r -> render());
+            // Readiness needs the student profiles (resume component), so load once they arrive.
+            vm.profiles.observe(getViewLifecycleOwner(), r -> {
                 if (!readinessRequested && r != null && r.isSuccess()) { readinessRequested = true; vm.loadReadiness(); }
             });
             vm.readiness.observe(getViewLifecycleOwner(), this::renderReadiness);
@@ -302,16 +304,39 @@ public final class OfficerScreens {
             chart.setHorizontalBars(new ArrayList<>(f.keySet()), new ArrayList<>(f.values()));
         }
 
-        private void renderReadiness(Resource<Map<String, Integer>> r) {
-            LinearLayout rows = root.findViewById(R.id.readiness_rows);
-            TextView caption = root.findViewById(R.id.readiness_caption);
+        private void renderReadiness(Resource<Map<String, ReadinessAnalyzer.Report>> r) {
+            LinearLayout rows = root.findViewById(R.id.readiness_rows), prep = root.findViewById(R.id.prep_rows);
+            TextView caption = root.findViewById(R.id.readiness_caption), prepCaption = root.findViewById(R.id.prep_caption);
             rows.removeAllViews();
-            if (r == null || r.isLoading()) { caption.setText("Calculating from applicants' logged activity…"); return; }
-            if (r.isError()) { caption.setText("Couldn't load readiness: " + r.message); return; }
-            int[] cmp = officer().container().analytics.readinessComparison(OfficerViewModel.data(officer().applications), r.data);
+            prep.removeAllViews();
+            if (r == null || r.isLoading()) { caption.setText("Calculating from students' logged activity…"); prepCaption.setText(null); return; }
+            if (r.isError()) { caption.setText("Couldn't load readiness: " + r.message); prepCaption.setText(caption.getText()); return; }
+            Analytics an = officer().container().analytics;
+            Map<String, Integer> overall = new java.util.HashMap<>();
+            for (Map.Entry<String, ReadinessAnalyzer.Report> e : r.data.entrySet()) overall.put(e.getKey(), e.getValue().overall);
+            int[] cmp = an.readinessComparison(OfficerViewModel.data(officer().applications), overall);
             UiKit.progress(rows, "Average readiness — all applicants", Math.max(0, cmp[0]), cmp[0] < 0 ? "—" : cmp[0] + "%");
             UiKit.progress(rows, "Average readiness — selected students", Math.max(0, cmp[1]), cmp[1] < 0 ? "—" : cmp[1] + "%");
-            caption.setText("Based on " + r.data.size() + " applicants' self-logged preparation in the last 30 days. Readiness is a guide, not a predictor.");
+            caption.setText("Based on applicants' self-logged preparation in the last 30 days. Readiness is a guide, not a predictor.");
+
+            // Aggregate-only preparation insights (withheld below Analytics.MIN_GROUP students).
+            Analytics.PrepInsights in = an.preparation(OfficerViewModel.data(officer().profiles),
+                    OfficerViewModel.data(officer().drives), r.data, System.currentTimeMillis());
+            for (Map.Entry<Models.Component, Integer> e : in.componentAverages.entrySet()) {
+                UiKit.progress(prep, e.getKey().label + (e.getValue() < 60 ? " · needs attention" : ""), e.getValue(), e.getValue() + "%");
+            }
+            if (!in.skillGaps.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String, Integer> e : in.skillGaps.entrySet()) {
+                    sb.append(sb.length() == 0 ? "" : " · ").append(e.getKey()).append(" (").append(e.getValue()).append(")");
+                }
+                UiKit.criterion(prep, R.drawable.ic_school, Tone.PRIMARY, "Common skill gaps", null,
+                        sb + " — number of students eligible for open drives who lack each required skill.");
+            }
+            prepCaption.setText(in.componentAverages.isEmpty() && in.skillGaps.isEmpty()
+                    ? "Not enough students yet to show aggregate insights (needs at least " + Analytics.MIN_GROUP + ")."
+                    : "Averages across " + in.studentsWithReadiness + " students; skill gaps across " + in.studentsTargeting
+                    + " verified students eligible for open drives. Aggregate only.");
         }
     }
 }

@@ -347,6 +347,21 @@ public final class UiKit {
         return error == null;
     }
 
+    /**
+     * Once a field shows an error, re-run its validator on every edit so the error clears as soon
+     * as the input becomes valid (fields without an error are left alone until the next submit).
+     */
+    public static void revalidate(TextInputLayout l, java.util.function.Function<String, String> validator) {
+        if (l.getEditText() == null) return;
+        l.getEditText().addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void afterTextChanged(android.text.Editable s) {
+                if (l.getError() != null) l.setError(validator.apply(s.toString().trim()));
+            }
+        });
+    }
+
     public static String nullIfBlank(String s) { return s == null || s.trim().isEmpty() ? null : s.trim(); }
 
     // ---------------------------------------------------------------- dialogs

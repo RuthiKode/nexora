@@ -86,6 +86,11 @@ public final class MatchScoreCalculator {
         return new ArrayList<>(out);
     }
 
+    /** Splits typed input such as "Java, SQL; react" into separate normalised skills. */
+    public static List<String> parseSkills(String input) {
+        return normalizeSkills(input == null ? null : java.util.Arrays.asList(input.split("[,;\\n]")));
+    }
+
     /** A match score is only shown for eligible drives, or provisionally when nothing failed. */
     public static boolean applies(EligibilityEngine.Result e) {
         return e.status == EligibilityEngine.Status.ELIGIBLE
