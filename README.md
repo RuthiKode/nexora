@@ -8,7 +8,31 @@ One APK with two role-based portals:
 - **Student:** profile, drive discovery, explainable eligibility and match score, apply, recruitment timeline, readiness dashboard, announcements.
 - **Placement officer:** verification queue, companies, drives, applicant pipeline, announcements, analytics.
 
-The full specification is in `NEXORA_PLAN.md` (kept outside the repo). This README records how the build differs from it, the setup steps, test results and the demo script.
+The full specification is in `NEXORA_PLAN.md` (kept outside the repo). This README records how the build differs from it, the setup steps, test results and the demo script. The project report and presentation are in [`project_documentation/`](project_documentation/).
+
+## Screenshots
+
+Real captures of the running app. Student and officer screens use the demo data; the last image is the live app on a physical phone.
+
+**Student portal**
+
+| Home | Your next steps | Explainable eligibility | Match score |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/student-home.jpg" width="200" alt="Student home"> | <img src="docs/screenshots/career-action-plan.jpg" width="200" alt="Career Action Plan"> | <img src="docs/screenshots/eligibility.jpg" width="200" alt="Eligibility card"> | <img src="docs/screenshots/match-score.jpg" width="200" alt="Match score breakdown"> |
+
+| Not eligible (CGPA 6.99) | Recruitment journey | Readiness | Profile (verified, locked) |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/not-eligible.jpg" width="200" alt="Not eligible explanation"> | <img src="docs/screenshots/journey.jpg" width="200" alt="Recruitment journey"> | <img src="docs/screenshots/readiness.jpg" width="200" alt="Readiness dashboard"> | <img src="docs/screenshots/profile.jpg" width="200" alt="Profile"> |
+
+**Placement officer portal**
+
+| Dashboard | Verify a record | Advance / reject | Preparation insights |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/officer-dashboard.jpg" width="200" alt="Officer dashboard"> | <img src="docs/screenshots/officer-verify.jpg" width="200" alt="Verification review"> | <img src="docs/screenshots/officer-applicant.jpg" width="200" alt="Applicant detail"> | <img src="docs/screenshots/officer-insights.jpg" width="200" alt="Preparation insights"> |
+
+**Live on a real phone** (Firebase project, dark theme)
+
+<img src="docs/screenshots/live-phone-match.jpg" width="200" alt="Live match score on a physical phone">
 
 ---
 
